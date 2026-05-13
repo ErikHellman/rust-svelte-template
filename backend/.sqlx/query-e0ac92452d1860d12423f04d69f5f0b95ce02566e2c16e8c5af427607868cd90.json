@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO identities (provider, provider_user_id, user_id) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "e0ac92452d1860d12423f04d69f5f0b95ce02566e2c16e8c5af427607868cd90"
+}

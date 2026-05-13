@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\", email as \"email!\", display_name, avatar_url\n           FROM users WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "email!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "avatar_url",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "168bddbf12c324fdd03ac0026a281480d8268dffaf2f87b81ef53956a3cc5101"
+}

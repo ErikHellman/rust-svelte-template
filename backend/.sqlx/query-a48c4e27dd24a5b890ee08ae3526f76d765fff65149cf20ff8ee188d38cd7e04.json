@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\", user_id as \"user_id!\", title as \"title!\", body as \"body!\", created_at as \"created_at!\", updated_at as \"updated_at!\"\n           FROM notes WHERE user_id = ? AND id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "user_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "title!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "body!",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a48c4e27dd24a5b890ee08ae3526f76d765fff65149cf20ff8ee188d38cd7e04"
+}

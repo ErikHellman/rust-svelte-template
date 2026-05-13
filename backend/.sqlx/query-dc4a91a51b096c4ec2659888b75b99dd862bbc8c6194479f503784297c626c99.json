@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM notes WHERE user_id = ? AND id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "dc4a91a51b096c4ec2659888b75b99dd862bbc8c6194479f503784297c626c99"
+}

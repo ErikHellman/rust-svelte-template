@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id, token_hash, user_id, expires_at, revoked_at FROM refresh_tokens WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "token_hash",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "user_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "expires_at",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "revoked_at",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c4c67265a09226f50634593808042b79e07fe3792838c22dd2a133d3a0ffe5be"
+}

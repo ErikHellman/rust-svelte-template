@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+
+  - repo: local
+    hooks:
+      - id: rustfmt
+        name: rustfmt
+        language: system
+        entry: bash -c 'cd backend && cargo fmt --check'
+        types_or: [rust]
+        pass_filenames: false
+
+      - id: clippy
+        name: cargo clippy
+        language: system
+        entry: bash -c 'cd backend && cargo clippy --all-targets -- -D warnings'
+        types_or: [rust]
+        pass_filenames: false
+
+      - id: svelte-check
+        name: svelte-check
+        language: system
+        entry: bash -c 'cd frontend && pnpm exec svelte-check --tsconfig ./tsconfig.json'
+        files: ^frontend/src/.*\.(ts|svelte)$
+        pass_filenames: false
+
+      - id: eslint
+        name: eslint
+        language: system
+        entry: bash -c 'cd frontend && pnpm exec eslint src --max-warnings 0'
+        files: ^frontend/src/.*\.(ts|svelte)$
+        pass_filenames: false
+
+      - id: prettier
+        name: prettier
+        language: system
+        entry: bash -c 'cd frontend && pnpm exec prettier --check src'
+        files: ^frontend/src/.*\.(ts|svelte|css|json)$
+        pass_filenames: false

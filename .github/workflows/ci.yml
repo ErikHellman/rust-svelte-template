@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  SQLX_OFFLINE: "true"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            backend/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('backend/Cargo.lock', 'backend/Cargo.toml') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install sqlx-cli
+        run: cargo install sqlx-cli --version 0.8.6 --no-default-features --features sqlite,rustls --locked
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Frontend install
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Backend fmt
+        working-directory: backend
+        run: cargo fmt --check
+
+      - name: Backend clippy
+        working-directory: backend
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Backend sqlx prepare check
+        working-directory: backend
+        run: cargo sqlx prepare --check -- --tests
+
+      - name: Backend tests
+        working-directory: backend
+        run: cargo test
+
+      - name: Frontend svelte-check
+        working-directory: frontend
+        run: pnpm exec svelte-check --tsconfig ./tsconfig.json
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: pnpm exec eslint src --max-warnings 0
+
+      - name: Frontend format
+        working-directory: frontend
+        run: pnpm exec prettier --check src
+
+      - name: Frontend build
+        working-directory: frontend
+        run: pnpm build

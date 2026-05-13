@@ -1,0 +1,35 @@
+services:
+  backend:
+    image: rust:1
+    working_dir: /workspace/backend
+    command: bash -lc "cargo install cargo-watch --locked --quiet || true && cargo watch -q -c -w src -w migrations -x run"
+    volumes:
+      - .:/workspace
+      - cargo-registry:/usr/local/cargo/registry
+      - cargo-target:/workspace/backend/target
+      - sqlite-data:/workspace/data
+    environment:
+      DATABASE_URL: sqlite:///workspace/data/app.db?mode=rwc
+      BIND_ADDR: 0.0.0.0:3000
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+
+  frontend:
+    image: node:22
+    working_dir: /workspace/frontend
+    command: bash -lc "corepack enable pnpm && pnpm install --ignore-scripts && pnpm dev --host 0.0.0.0"
+    volumes:
+      - .:/workspace
+      - node-modules:/workspace/frontend/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  cargo-registry:
+  cargo-target:
+  node-modules:
+  sqlite-data:

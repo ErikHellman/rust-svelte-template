@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT user_id FROM identities WHERE provider = ? AND provider_user_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "user_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b52c0d852fdf76cbe362b7b56335722ef110781aeb16b125ae0c4d421093c3da"
+}
