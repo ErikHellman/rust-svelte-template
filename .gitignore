@@ -18,4 +18,5 @@ frontend/dist/
 .DS_Store
 .idea/
 .vscode/
+.txt/
 *.swp

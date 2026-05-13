@@ -17,6 +17,8 @@ export default tseslint.config(
         RequestInit: 'readonly',
         Response: 'readonly',
         Headers: 'readonly',
+        SubmitEvent: 'readonly',
+        URLSearchParams: 'readonly',
       },
     },
     rules: {

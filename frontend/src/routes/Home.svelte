@@ -23,6 +23,7 @@
   {:else}
     <div class="row">
       <button class="primary" onclick={() => router.navigate('/login')}>Sign in</button>
+      <button onclick={() => router.navigate('/signup')}>Have an invite? Sign up</button>
     </div>
   {/if}
 </div>

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT OR IGNORE INTO invite_codes (code, role) VALUES (?, 'admin')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "47653087f8560f0e9d4c4193bb96d39da485bfddf27ed36c0cda2fc1b41b118f"
+}

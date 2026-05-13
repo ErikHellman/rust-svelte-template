@@ -22,14 +22,25 @@ SQLite columns are inferred as nullable by default. Annotate non-null columns
 in `SELECT`s with `column as "column!"` to get `String` instead of
 `Option<String>`. See `backend/src/notes/repo.rs` for the pattern.
 
-## OAuth account linking (template default vs. project policy)
+## Invite-gated registration
 
-`auth/mod.rs::upsert_user` always creates a fresh `users` row when a new
-`(provider, provider_user_id)` pair arrives — even if the email matches an
-existing user. Account linking across providers by verified email is a
-**project-specific policy decision** with real security implications (email
-takeover, provider trust, etc.). Each forked project should make a deliberate
-choice and adjust `upsert_user` to match.
+All user creation goes through `auth/mod.rs::register_oauth_user` (OAuth) or
+`password_signup` (email/password), both of which:
+
+1. Pull an invite via `invites::find_valid` (consumed-or-expired ⇒ rejected).
+2. If the invite has a bound email, enforce it (case-insensitive match).
+3. Insert the user with the invite's `role` (so the bootstrap admin code
+   confers admin).
+4. Call `invites::mark_used` inside the same transaction.
+
+`INITIAL_INVITE_CODE` from the env is seeded idempotently at boot via
+`invites::ensure_initial_admin`. Drop the env var once the admin account
+exists — the row remains in the DB and is single-use.
+
+Account linking across providers by verified email is intentionally **not**
+done: a fresh user is created for each `(provider, provider_user_id)`. This is
+a project-specific policy decision with real security implications (email
+takeover, provider trust); revisit per project.
 
 ## What this template is (and isn't)
 

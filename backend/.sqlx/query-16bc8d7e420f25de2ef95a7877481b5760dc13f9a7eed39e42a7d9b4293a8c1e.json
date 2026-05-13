@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT password_hash as \"password_hash!\" FROM password_credentials WHERE user_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "password_hash!",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "16bc8d7e420f25de2ef95a7877481b5760dc13f9a7eed39e42a7d9b4293a8c1e"
+}

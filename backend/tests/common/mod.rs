@@ -25,6 +25,7 @@ pub async fn test_state() -> (AppState, tempfile::TempDir) {
         access_token_ttl_secs: 900,
         refresh_token_ttl_secs: 86_400,
         cookie_secret: "test-cookie-secret-very-long-and-fake-fake-fake".into(),
+        initial_invite_code: None,
         google: None,
         github: None,
         microsoft: None,
@@ -49,6 +50,7 @@ pub async fn test_state() -> (AppState, tempfile::TempDir) {
     (state, tmp)
 }
 
+#[allow(dead_code)]
 pub async fn seed_user(state: &AppState, email: &str) -> String {
     let id = uuid::Uuid::now_v7().to_string();
     sqlx::query!(

@@ -1,26 +1,31 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id as \"id!\", email as \"email!\", display_name, avatar_url\n           FROM users WHERE id = ?",
+  "query": "SELECT code as \"code!\", email, role as \"role!\", expires_at, used_at\n           FROM invite_codes WHERE code = ?",
   "describe": {
     "columns": [
       {
-        "name": "id!",
+        "name": "code!",
         "ordinal": 0,
         "type_info": "Text"
       },
       {
-        "name": "email!",
+        "name": "email",
         "ordinal": 1,
         "type_info": "Text"
       },
       {
-        "name": "display_name",
+        "name": "role!",
         "ordinal": 2,
         "type_info": "Text"
       },
       {
-        "name": "avatar_url",
+        "name": "expires_at",
         "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "used_at",
+        "ordinal": 4,
         "type_info": "Text"
       }
     ],
@@ -29,10 +34,11 @@
     },
     "nullable": [
       true,
+      true,
       false,
       true,
       true
     ]
   },
-  "hash": "168bddbf12c324fdd03ac0026a281480d8268dffaf2f87b81ef53956a3cc5101"
+  "hash": "7d2a646a9b2fc68609f617d90f457f7ced9173f7a95952ab616525024999d845"
 }

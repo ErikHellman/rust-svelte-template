@@ -9,6 +9,7 @@ pub struct Claims {
     pub iss: String,
     pub iat: i64,
     pub exp: i64,
+    pub role: String,
 }
 
 pub struct JwtKeys {
@@ -37,13 +38,14 @@ impl JwtKeys {
         })
     }
 
-    pub fn mint_access(&self, user_id: &str) -> Result<String> {
+    pub fn mint_access(&self, user_id: &str, role: &str) -> Result<String> {
         let now = chrono::Utc::now().timestamp();
         let claims = Claims {
             sub: user_id.to_string(),
             iss: self.issuer.clone(),
             iat: now,
             exp: now + self.access_ttl_secs,
+            role: role.to_string(),
         };
         let token = encode(&Header::new(Algorithm::RS256), &claims, &self.encoding)?;
         Ok(token)

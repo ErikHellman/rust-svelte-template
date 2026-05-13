@@ -1,9 +1,10 @@
 # Full-stack template
 
 A starter project that pairs a **Rust** API (Axum + sqlx + SQLite) with a
-**Svelte 5** SPA, complete with OAuth login (Google, GitHub, Apple, Microsoft),
-JWT access tokens, rotating refresh tokens, a small example CRUD feature
-("notes"), and the tooling to go from clone to running app in a few commands.
+**Svelte 5** SPA. It ships with invite-gated registration (email/password +
+OAuth from Google, GitHub, Apple, Microsoft), per-user roles, JWT access
+tokens, rotating refresh tokens, a small example CRUD feature ("notes"), and
+the tooling to go from clone to running app in a few commands.
 
 ## Use this template for a new project
 
@@ -16,14 +17,22 @@ JWT access tokens, rotating refresh tokens, a small example CRUD feature
    ```sh
    cp .env.example .env
    just gen-jwt-keys >> .env       # appends RSA keys for JWT signing
-   # then open .env and fill in the OAuth client ids/secrets you need
+   # open .env and:
+   #  - set INITIAL_INVITE_CODE to a long random string
+   #  - fill in the OAuth client ids/secrets you actually want
    ```
 4. **First boot**:
    ```sh
    just migrate
    just dev
    ```
-5. Open <http://localhost:5173>, click "Sign in", pick a configured provider.
+5. Open <http://localhost:5173>, click **Sign up**, paste the
+   `INITIAL_INVITE_CODE`, then either set an email + password or pick a
+   configured provider. The first signup with that code becomes the **admin**;
+   the code is single-use.
+
+Once you have an admin, generate per-person invite codes directly in SQLite
+(see "Issuing more invites" below) or build an admin UI.
 
 Only the providers you fill in are exposed; the rest return 503 at runtime, so
 you don't have to set up all four.
@@ -73,15 +82,43 @@ just build        # production build → backend/target/release/<binary>
 
 ## How auth works (one-line version)
 
-User clicks a provider → `/api/auth/<provider>/start` redirects to the provider
-with PKCE + state cookie → provider redirects back to `/callback` → we exchange
-the code, fetch user info, upsert a user, mint an **access JWT** + set a
-rotating **refresh cookie** scoped to `/api/auth`. The SPA keeps the access
-token in memory only (XSS-safer); `lib/api.ts` retries on 401 by hitting
-`/api/auth/refresh` once before giving up.
+Registration is **invite-gated**. Login flows authenticate existing users only.
 
-Token reuse is detected: if the same refresh cookie is presented twice, the
-second call is rejected (the first call rotated it).
+**Signup** — `POST /api/auth/signup/invite/check` validates the code (returning
+any bound email + role), then either `POST /api/auth/signup/password` for
+email + password, or `GET /api/auth/<provider>/signup/start?code=…` to attach
+an OAuth identity. Either path consumes the invite atomically.
+
+**Login** — existing accounts use `POST /api/auth/login` (password) or
+`GET /api/auth/<provider>/start` (OAuth). The OAuth callback refuses to
+auto-create users; if no identity matches, it redirects back to `/signup` with
+an error.
+
+**Session** — login/signup mint an RS256 access JWT (15 min, in memory on the
+client) and a rotating refresh token in an HttpOnly cookie scoped to
+`/api/auth`. The SPA's `lib/api.ts` retries once after a 401 by hitting
+`/api/auth/refresh`. Refresh-token reuse is detected: presenting the same
+cookie twice fails — the first call rotated it.
+
+### Issuing more invites
+
+There's no admin UI; create invites with a single SQL statement. From the
+backend directory:
+
+```sh
+sqlite3 ../data/app.db \
+  "INSERT INTO invite_codes (code, email, role) VALUES ('SOMETHING-RANDOM', 'newperson@example.com', 'user');"
+```
+
+`email` is optional. Omitting it lets anyone with the code register, with any
+email. `role` defaults to `'user'`; use `'admin'` to grant admin.
+
+### Roles
+
+Every user has a `role` (default `'user'`). The role is included in the JWT
+claims and in `/api/auth/me`, so server middleware can check it cheaply. There
+are currently no admin-only endpoints in the template; add `AuthUser`-based
+checks in handlers as you need them.
 
 ## Adding a new feature module
 

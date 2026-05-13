@@ -12,6 +12,7 @@ pub struct AppConfig {
     pub access_token_ttl_secs: i64,
     pub refresh_token_ttl_secs: i64,
     pub cookie_secret: String,
+    pub initial_invite_code: Option<String>,
 
     pub google: Option<OAuthCreds>,
     pub github: Option<OAuthCreds>,
@@ -58,6 +59,7 @@ impl AppConfig {
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(30 * 24 * 60 * 60),
             cookie_secret: required("COOKIE_SECRET")?,
+            initial_invite_code: optional("INITIAL_INVITE_CODE"),
 
             google: oauth_pair("GOOGLE"),
             github: oauth_pair("GITHUB"),
