@@ -133,16 +133,72 @@ Mirror `backend/src/notes/`:
 
 ## Deploying
 
-The release build is a single binary plus a `static/` directory:
+### Single Docker image (recommended)
+
+The repo ships a multi-stage `Dockerfile` that builds the SPA, compiles the
+backend, and packages both into one ~125 MB `debian:bookworm-slim` image.
+The container runs as a non-root user, persists SQLite under `/data`, and
+includes a `HEALTHCHECK` against `/api/health`.
+
+```sh
+just docker-build         # build full-stack-template:latest for your host arch
+just docker-run           # run it on :3000, mounting the `app-data` named volume at /data
+```
+
+#### Required env vars
+
+The image fails fast at boot unless these are provided at runtime:
+
+- `COOKIE_SECRET` — 32+ bytes (`openssl rand -hex 32`)
+- `JWT_PRIVATE_KEY_PEM`, `JWT_PUBLIC_KEY_PEM` — RSA keypair from `just gen-jwt-keys`
+- `PUBLIC_BASE_URL` — the origin the SPA reaches the API on (e.g. `https://yourapp.com`)
+- Whichever OAuth `*_CLIENT_ID` / `*_CLIENT_SECRET` pairs you actually use
+- `INITIAL_INVITE_CODE` — only on first boot, then unset
+
+The Dockerfile bakes sensible defaults for `DATABASE_URL` (sqlite under `/data`),
+`BIND_ADDR` (`0.0.0.0:3000`), `STATIC_DIR`, and `RUST_LOG`; override only if needed.
+
+#### .env handling (important)
+
+The `just docker-run` recipe mounts your local `.env` as a file at `/app/.env`
+inside the container (not `docker --env-file`). This is intentional: the
+multi-line PEM secrets in `.env` use `\n` escape sequences that `dotenvy`
+parses correctly when reading the file directly, but `docker --env-file`
+passes the literal `\n` characters through, corrupting the key. For
+non-secret env vars only, `--env-file` would be fine; for the full `.env`,
+mount the file.
+
+Ensure the host `.env` is readable by uid 1000 (the container's `app` user):
+
+```sh
+chmod 644 .env       # if your default umask makes it 600
+```
+
+#### Multi-architecture image
+
+For a multi-arch image (amd64 + arm64) pushed to a registry:
+
+```sh
+docker login <registry>    # if not already authenticated
+just docker-build-multiarch ghcr.io/<you>/<repo>:0.1.0
+```
+
+#### Production wiring
+
+Mount a real volume (`-v /srv/app-data:/data` or a Docker named volume) and
+put a TLS terminator (Caddy, nginx, Cloudflare) in front of port `3000`. The
+container does no TLS itself.
+
+### Bare binary (alternative)
+
+If you'd rather not use Docker, the release build is a single binary plus a
+`static/` directory:
 
 ```sh
 just build
 # backend/target/release/backend now serves SPA + API from one process.
 # Provide a writable directory for SQLite — see DATABASE_URL in .env.example.
 ```
-
-Mount `data/` for the SQLite file, set the env vars, point a TLS terminator at
-port `3000`, and you're done. The binary needs no Node runtime in prod.
 
 ## License
 
