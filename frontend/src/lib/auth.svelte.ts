@@ -34,14 +34,27 @@ class AuthStore {
   user = $state<User | null>(null);
   accessToken = $state<string | null>(null);
   status = $state<AuthStatus>('unknown');
+  providers = $state<Provider[]>([]);
 
   async bootstrap(): Promise<void> {
+    await this.loadProviders();
     const ok = await this.refresh();
     if (!ok) {
       this.status = 'anonymous';
       return;
     }
     await this.loadMe();
+  }
+
+  async loadProviders(): Promise<void> {
+    try {
+      const res = await fetch('/api/auth/providers');
+      if (!res.ok) return;
+      const body = (await res.json()) as { providers: Provider[] };
+      this.providers = body.providers;
+    } catch {
+      // Leave providers empty — UI will hide all OAuth buttons.
+    }
   }
 
   /** Calls /api/auth/refresh once. Returns true on success. Never throws. */

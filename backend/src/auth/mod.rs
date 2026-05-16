@@ -35,10 +35,34 @@ pub fn router() -> Router<AppState> {
         .route("/signup/invite/check", post(check_invite))
         .route("/signup/password", post(password_signup))
         .route("/{provider}/signup/start", get(oauth_signup_start))
+        // Which OAuth providers have credentials configured.
+        .route("/providers", get(list_providers))
         // Session management + introspection.
         .route("/refresh", post(refresh))
         .route("/logout", post(logout))
         .route("/me", get(me))
+}
+
+#[derive(Serialize)]
+struct ProvidersResponse {
+    providers: Vec<&'static str>,
+}
+
+async fn list_providers(State(state): State<AppState>) -> Json<ProvidersResponse> {
+    let mut providers = Vec::with_capacity(4);
+    if state.config.google.is_some() {
+        providers.push("google");
+    }
+    if state.config.github.is_some() {
+        providers.push("github");
+    }
+    if state.config.apple.is_some() {
+        providers.push("apple");
+    }
+    if state.config.microsoft.is_some() {
+        providers.push("microsoft");
+    }
+    Json(ProvidersResponse { providers })
 }
 
 // -------------------------------------------------------------------------

@@ -2,12 +2,13 @@
   import { auth, type Provider } from '../lib/auth.svelte';
   import { router } from '../lib/router.svelte';
 
-  const providers: { id: Provider; label: string }[] = [
+  const allProviders: { id: Provider; label: string }[] = [
     { id: 'google', label: 'Sign up with Google' },
     { id: 'github', label: 'Sign up with GitHub' },
     { id: 'apple', label: 'Sign up with Apple' },
     { id: 'microsoft', label: 'Sign up with Microsoft' },
   ];
+  const providers = $derived(allProviders.filter((p) => auth.providers.includes(p.id)));
 
   let step = $state<'invite' | 'method'>('invite');
   let code = $state('');
@@ -139,11 +140,13 @@
       </form>
     </div>
 
-    <div class="card stack">
-      <strong>Or use a provider</strong>
-      {#each providers as p (p.id)}
-        <button onclick={() => auth.startOAuthSignup(p.id, code.trim())}>{p.label}</button>
-      {/each}
-    </div>
+    {#if providers.length > 0}
+      <div class="card stack">
+        <strong>Or use a provider</strong>
+        {#each providers as p (p.id)}
+          <button onclick={() => auth.startOAuthSignup(p.id, code.trim())}>{p.label}</button>
+        {/each}
+      </div>
+    {/if}
   {/if}
 </div>

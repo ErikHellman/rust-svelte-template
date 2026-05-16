@@ -2,12 +2,13 @@
   import { auth, type Provider } from '../lib/auth.svelte';
   import { router } from '../lib/router.svelte';
 
-  const providers: { id: Provider; label: string }[] = [
+  const allProviders: { id: Provider; label: string }[] = [
     { id: 'google', label: 'Continue with Google' },
     { id: 'github', label: 'Continue with GitHub' },
     { id: 'apple', label: 'Continue with Apple' },
     { id: 'microsoft', label: 'Continue with Microsoft' },
   ];
+  const providers = $derived(allProviders.filter((p) => auth.providers.includes(p.id)));
 
   let email = $state('');
   let password = $state('');
@@ -55,10 +56,12 @@
     </div>
   </form>
 
-  <div class="stack">
-    <p class="muted">Or use a provider you've already linked to your account:</p>
-    {#each providers as p (p.id)}
-      <button onclick={() => auth.startOAuthLogin(p.id)}>{p.label}</button>
-    {/each}
-  </div>
+  {#if providers.length > 0}
+    <div class="stack">
+      <p class="muted">Or use a provider you've already linked to your account:</p>
+      {#each providers as p (p.id)}
+        <button onclick={() => auth.startOAuthLogin(p.id)}>{p.label}</button>
+      {/each}
+    </div>
+  {/if}
 </div>
