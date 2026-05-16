@@ -1,0 +1,35 @@
+# Version control
+.git
+.github
+.gitignore
+.pre-commit-config.yaml
+
+# Build artifacts (image rebuilds these from source)
+backend/target
+frontend/node_modules
+frontend/dist
+backend/static
+
+# Local data
+data
+*.db
+*.db-shm
+*.db-wal
+
+# Local env (image consumer provides at runtime)
+.env
+.env.local
+.env.*.local
+
+# Editors / OS
+.vscode
+.idea
+*.swp
+.DS_Store
+.txt
+
+# Docs / templates not needed at runtime
+docs
+README.md
+CLAUDE.md
+docker-compose.yml
