@@ -64,3 +64,16 @@ gen-jwt-keys:
     printf 'JWT_PRIVATE_KEY_PEM="%s"\n' "$(awk '{printf "%s\\n", $0}' "$tmp/jwt.key")"
     printf 'JWT_PUBLIC_KEY_PEM="%s"\n'  "$(awk '{printf "%s\\n", $0}' "$tmp/jwt.pub")"
     rm -rf "$tmp"
+
+# Build the production image for the local host architecture.
+docker-build:
+    docker build -t full-stack-template:latest .
+
+# Build a multi-arch (amd64 + arm64) image and push to a registry.
+# Example: just docker-build-multiarch ghcr.io/me/full-stack-template:0.1.0
+docker-build-multiarch TAG:
+    docker buildx build --platform linux/amd64,linux/arm64 -t {{TAG}} --push .
+
+# Run the production image locally, mounting a named volume for SQLite.
+docker-run:
+    docker run --rm -p 3000:3000 -v app-data:/data --env-file .env full-stack-template:latest
