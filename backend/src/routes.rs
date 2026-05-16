@@ -1,6 +1,10 @@
-use crate::AppState;
+use crate::{AppError, AppState};
 use axum::Router;
+use axum::extract::State;
 use axum::http::{HeaderValue, Method};
+use axum::response::Json;
+use axum::routing::get;
+use serde_json::{Value, json};
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::services::{ServeDir, ServeFile};
@@ -8,6 +12,7 @@ use tower_http::trace::TraceLayer;
 
 pub fn build(state: AppState) -> Router {
     let api = Router::new()
+        .route("/health", get(health))
         .nest("/auth", crate::auth::router())
         .nest("/notes", crate::notes::router())
         .with_state(state.clone());
@@ -24,6 +29,13 @@ pub fn build(state: AppState) -> Router {
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
         .layer(cors)
+}
+
+async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppError> {
+    sqlx::query_scalar::<_, i64>("SELECT 1")
+        .fetch_one(&state.db)
+        .await?;
+    Ok(Json(json!({ "ok": true })))
 }
 
 fn build_cors(state: &AppState) -> CorsLayer {
