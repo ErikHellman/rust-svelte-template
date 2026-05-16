@@ -2,11 +2,15 @@
 
 # ---- Stage 1: build the SPA ----
 FROM node:22-bookworm-slim AS frontend-builder
+# Pin pnpm 10.x: pnpm 11 fails fresh installs with ERR_PNPM_IGNORED_BUILDS even
+# when esbuild is allowlisted in package.json + pnpm-workspace.yaml.
 RUN corepack enable && corepack prepare pnpm@10.13.1 --activate
 WORKDIR /frontend
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
+# vite.config.ts writes to ../backend/static for the local `just build` workflow;
+# override here because that path doesn't exist inside the frontend-builder stage.
 RUN pnpm exec vite build --outDir dist
 
 # ---- Stage 2: cache cargo dependencies ----
@@ -25,9 +29,11 @@ ENV SQLX_OFFLINE=true
 COPY backend/src ./src
 COPY backend/migrations ./migrations
 COPY backend/.sqlx ./.sqlx
-# Force rebuild of the crate itself (lib + bin); deps remain cached in target/release/deps.
-RUN rm -f target/release/deps/backend* target/release/libbackend* target/release/backend \
-    && find target/release/.fingerprint -maxdepth 1 -name 'backend-*' -exec rm -rf {} + \
+# Stage 2's stub build leaves stale fingerprint dirs and a libbackend rlib that cargo's
+# incremental cache won't always invalidate. Wipe both the lib (`backend`, no suffix)
+# and bin (`backend-<hash>`) fingerprints, plus the stale lib artifact, before rebuilding.
+RUN find target/release/.fingerprint -maxdepth 1 \( -name 'backend' -o -name 'backend-*' \) -exec rm -rf {} + \
+    && rm -f target/release/deps/backend* target/release/libbackend* target/release/backend \
     && cargo build --release --locked --bin backend
 
 # ---- Stage 4: runtime ----
