@@ -26,6 +26,8 @@ data
 .idea
 *.swp
 .DS_Store
+# Local IDE scratch dir, not part of the repo — kept here so an existing
+# clone with this directory doesn't accidentally bloat the build context.
 .txt/
 
 # Docs / templates not needed at runtime
