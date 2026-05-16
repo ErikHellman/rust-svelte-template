@@ -2,12 +2,12 @@
 
 # ---- Stage 1: build the SPA ----
 FROM node:22-bookworm-slim AS frontend-builder
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10.13.1 --activate
 WORKDIR /frontend
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
-RUN pnpm build
+RUN pnpm exec vite build --outDir dist
 
 # ---- Stage 2: cache cargo dependencies ----
 FROM rust:1-bookworm AS backend-deps
@@ -25,8 +25,9 @@ ENV SQLX_OFFLINE=true
 COPY backend/src ./src
 COPY backend/migrations ./migrations
 COPY backend/.sqlx ./.sqlx
-# Force rebuild of the crate itself; deps remain cached in target/release/deps.
-RUN rm -f target/release/deps/backend* target/release/backend \
+# Force rebuild of the crate itself (lib + bin); deps remain cached in target/release/deps.
+RUN rm -f target/release/deps/backend* target/release/libbackend* target/release/backend \
+    && find target/release/.fingerprint -maxdepth 1 -name 'backend-*' -exec rm -rf {} + \
     && cargo build --release --locked --bin backend
 
 # ---- Stage 4: runtime ----
