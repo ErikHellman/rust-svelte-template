@@ -75,5 +75,8 @@ docker-build-multiarch TAG:
     docker buildx build --platform linux/amd64,linux/arm64 -t {{TAG}} --push .
 
 # Run the production image locally, mounting a named volume for SQLite.
+# We mount .env as a file so dotenvy parses it inside the container —
+# `docker --env-file` does not handle the multi-line PEM escape sequences
+# in our .env format (it passes literal `\n` instead of real newlines).
 docker-run:
-    docker run --rm -p 3000:3000 -v app-data:/data --env-file .env full-stack-template:latest
+    docker run --rm -p 3000:3000 -v app-data:/data -v "$(pwd)/.env":/app/.env:ro full-stack-template:latest
