@@ -29,7 +29,7 @@ build:
 # Run all tests (backend Rust + frontend vitest).
 test:
     cd backend && cargo test
-    cd frontend && pnpm test || true
+    cd frontend && pnpm test
 
 # sqlx migrations
 migrate:
